@@ -1,0 +1,41 @@
+chat_messages:
+  get:
+    summary: "List group chat messages"
+    tags:
+      - "Chat"
+    responses:
+      "200":
+        description: "List of chat messages"
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "../schemas/chatMessage.yml"
+  post:
+    summary: "Post a new message to the group chat"
+    tags:
+      - "Chat"
+    security:
+      - TokenAuth: []
+    requestBody:
+      description: "New chat message"
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              text:
+                type: string
+            required:
+              - text
+    responses:
+      "201":
+        description: "Message created"
+        content:
+          application/json:
+            schema:
+              $ref: "../schemas/chatMessage.yml"
+      "401":
+        description: "Unauthorized"

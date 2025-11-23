@@ -1,0 +1,12 @@
+type: object
+properties:
+  key:
+    type: string
+    example: "2f5c9d0e8a..."
+  member:
+    $ref: "./member.yml"
+  created_at:
+    type: string
+    format: date-time
+required:
+  - key

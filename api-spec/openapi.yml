@@ -1,0 +1,30 @@
+openapi: 3.1.0
+info:
+  title: "Chat API"
+  version: "1.0.0"
+  description: "API for member registration, authorization and a single group chat."
+servers:
+  - url: "/api"
+    description: "Local API server"
+paths:
+  /auth/register:
+    $ref: "./paths/auth.yml#/auth_register"
+  /auth/login:
+    $ref: "./paths/auth.yml#/auth_login"
+  /profile:
+    $ref: "./paths/auth.yml#/profile"
+  /chat/messages:
+    $ref: "./paths/chat.yml#/chat_messages"
+components:
+  schemas:
+    Member:
+      $ref: "./schemas/member.yml"
+    AuthToken:
+      $ref: "./schemas/authToken.yml"
+    ChatMessage:
+      $ref: "./schemas/chatMessage.yml"
+  securitySchemes:
+    TokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
