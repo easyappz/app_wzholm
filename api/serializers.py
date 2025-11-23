@@ -36,7 +36,7 @@ class LoginSerializer(serializers.Serializer):
 
 
 class ChatMessageSerializer(serializers.ModelSerializer):
-    member = serializers.CharField(source="member.username", read_only=True)
+    member = MemberSerializer(read_only=True)
 
     class Meta:
         model = ChatMessage

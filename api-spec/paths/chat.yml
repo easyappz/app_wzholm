@@ -3,9 +3,18 @@ chat_messages:
     summary: "List group chat messages"
     tags:
       - "Chat"
+    parameters:
+      - name: limit
+        in: query
+        required: false
+        description: "Maximum number of latest messages to return (1-100). Defaults to 50."
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
     responses:
       "200":
-        description: "List of chat messages"
+        description: "List of messages"
         content:
           application/json:
             schema:
@@ -19,17 +28,17 @@ chat_messages:
     security:
       - TokenAuth: []
     requestBody:
-      description: "New chat message"
       required: true
       content:
         application/json:
           schema:
             type: object
+            required:
+              - text
             properties:
               text:
                 type: string
-            required:
-              - text
+                example: "Привет всем!"
     responses:
       "201":
         description: "Message created"
@@ -39,3 +48,8 @@ chat_messages:
               $ref: "../schemas/chatMessage.yml"
       "401":
         description: "Unauthorized"
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
