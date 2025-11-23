@@ -1,13 +1,52 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { registerMember } from '../../api/auth';
 
 function Register() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [statusMessage, setStatusMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (event) => {
+  const navigate = useNavigate();
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    setStatusMessage('Регистрация пока не настроена (демо интерфейс, без запроса к серверу).');
+
+    setStatusMessage('');
+    setErrorMessage('');
+
+    if (!username.trim() || !password.trim()) {
+      setErrorMessage('Пожалуйста, введите имя пользователя и пароль.');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await registerMember({ username, password });
+      setStatusMessage('Аккаунт успешно создан. Теперь вы можете войти.');
+      navigate('/login');
+    } catch (error) {
+      let message = 'Не удалось создать аккаунт. Попробуйте ещё раз.';
+
+      if (error.response && error.response.data) {
+        const data = error.response.data;
+
+        if (typeof data === 'string') {
+          message = data;
+        } else if (data.detail && typeof data.detail === 'string') {
+          message = data.detail;
+        } else if (data.username && Array.isArray(data.username) && data.username.length > 0) {
+          message = data.username[0];
+        }
+      }
+
+      setErrorMessage(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -49,11 +88,16 @@ function Register() {
           />
         </div>
 
-        <button type="submit" className="button-primary form-submit">
-          Создать аккаунт
+        <button
+          type="submit"
+          className="button-primary form-submit"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? 'Создание аккаунта...' : 'Создать аккаунт'}
         </button>
 
-        {statusMessage && (
+        {errorMessage && <div className="form-status form-status-error">{errorMessage}</div>}
+        {statusMessage && !errorMessage && (
           <div className="form-status">{statusMessage}</div>
         )}
       </form>

@@ -18,6 +18,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
@@ -43,6 +44,23 @@
 .app-nav-link:hover {
   background-color: #e3efff;
   color: #1d5fbf;
+}
+
+.app-auth-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #555555;
+}
+
+.app-auth-status strong {
+  font-weight: 600;
+}
+
+.app-auth-logout-button {
+  padding-inline: 12px;
+  padding-block: 6px;
 }
 
 .app-main {
@@ -101,6 +119,9 @@
 }
 
 .chat-message-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
   font-size: 12px;
   color: #777777;
   margin-bottom: 2px;
@@ -108,6 +129,10 @@
 
 .chat-message-author {
   font-weight: 500;
+}
+
+.chat-message-time {
+  font-size: 11px;
 }
 
 .chat-message-text {
@@ -118,6 +143,10 @@
 .chat-empty {
   font-size: 14px;
   color: #777777;
+}
+
+.chat-error {
+  color: #c0392b;
 }
 
 .chat-input-form {
@@ -193,6 +222,10 @@
   color: #1d5fbf;
 }
 
+.form-status-error {
+  color: #c0392b;
+}
+
 /* Buttons */
 
 .button-primary {
@@ -217,6 +250,12 @@
 .button-primary:active {
   transform: translateY(1px);
   box-shadow: 0 1px 4px rgba(58, 118, 193, 0.3);
+}
+
+.button-primary:disabled {
+  opacity: 0.7;
+  cursor: default;
+  box-shadow: none;
 }
 
 /* Profile */
@@ -244,6 +283,10 @@
   color: #777777;
 }
 
+.profile-placeholder-error {
+  color: #c0392b;
+}
+
 .placeholder-pill {
   display: inline-block;
   padding: 2px 8px;
@@ -257,7 +300,6 @@
   .app-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 8px;
   }
 
   .app-main {

@@ -1,32 +1,93 @@
-import React, { useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { fetchChatMessages, sendChatMessage } from '../../api/chat';
+import { AuthContext } from '../../context/AuthContext';
 
 export const Home = () => {
+  const { token } = useContext(AuthContext);
+
+  const [messages, setMessages] = useState([]);
   const [messageText, setMessageText] = useState('');
   const [infoMessage, setInfoMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const mockMessages = [
-    {
-      id: 1,
-      author: 'demo_user',
-      text: 'Добро пожаловать в групповой чат!',
-    },
-    {
-      id: 2,
-      author: 'guest',
-      text: 'Сейчас это только демонстрационный интерфейс без подключения к серверу.',
-    },
-  ];
+  const loadMessages = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const data = await fetchChatMessages(50);
+      setMessages(Array.isArray(data) ? data : []);
+      setErrorMessage('');
+    } catch (error) {
+      setErrorMessage('Не удалось загрузить сообщения. Попробуйте обновить страницу.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-  const handleSubmit = (event) => {
+  useEffect(() => {
+    let isCancelled = false;
+
+    const fetchInitial = async () => {
+      if (isCancelled) {
+        return;
+      }
+
+      await loadMessages();
+    };
+
+    fetchInitial();
+
+    const intervalId = setInterval(() => {
+      if (!isCancelled) {
+        loadMessages();
+      }
+    }, 5000);
+
+    return () => {
+      isCancelled = true;
+      clearInterval(intervalId);
+    };
+  }, [loadMessages]);
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
+
+    setInfoMessage('');
 
     if (!messageText.trim()) {
       setInfoMessage('Введите текст сообщения перед отправкой.');
       return;
     }
 
-    setInfoMessage('Сообщение не отправлено (демо режим, без сервера).');
-    setMessageText('');
+    if (!token) {
+      setInfoMessage('Чтобы отправлять сообщения, войдите в систему.');
+      return;
+    }
+
+    try {
+      await sendChatMessage(messageText.trim());
+      setMessageText('');
+      setInfoMessage('');
+      await loadMessages();
+    } catch (error) {
+      setInfoMessage('Не удалось отправить сообщение. Попробуйте ещё раз.');
+    }
+  };
+
+  const formatTime = (isoString) => {
+    if (!isoString) {
+      return '';
+    }
+
+    try {
+      const date = new Date(isoString);
+      return date.toLocaleTimeString('ru-RU', {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch (error) {
+      return '';
+    }
   };
 
   return (
@@ -36,18 +97,38 @@ export const Home = () => {
     >
       <h1 className="page-title">Групповой чат</h1>
       <p className="page-subtitle">
-        Здесь будет отображаться общий чат всех участников. Пока что это статический интерфейс для демонстрации.
+        Здесь отображается общий чат всех участников. Сообщения обновляются
+        автоматически каждые несколько секунд.
       </p>
 
       <div className="chat-layout">
         <div className="chat-messages" aria-label="Сообщения чата">
-          {mockMessages.length === 0 ? (
+          {isLoading && messages.length === 0 && (
+            <div className="chat-empty">Загрузка сообщений...</div>
+          )}
+
+          {!isLoading && errorMessage && (
+            <div className="chat-empty chat-error">{errorMessage}</div>
+          )}
+
+          {!isLoading && !errorMessage && messages.length === 0 && (
             <div className="chat-empty">Сообщений пока нет</div>
-          ) : (
-            mockMessages.map((message) => (
+          )}
+
+          {!isLoading && !errorMessage && messages.length > 0 && (
+            messages.map((message) => (
               <div key={message.id} className="chat-message">
                 <div className="chat-message-meta">
-                  <span className="chat-message-author">{message.author}</span>
+                  <span className="chat-message-author">
+                    {message.member && message.member.username
+                      ? message.member.username
+                      : 'Неизвестный участник'}
+                  </span>
+                  {message.created_at && (
+                    <span className="chat-message-time">
+                      {formatTime(message.created_at)}
+                    </span>
+                  )}
                 </div>
                 <div className="chat-message-text">{message.text}</div>
               </div>
